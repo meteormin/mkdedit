@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Go WASM + OverType Markdown IDE</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- OverType: CDN 단일 스크립트 -->
+  <script src="https://unpkg.com/overtype/dist/overtype.min.js"></script>
+</head>
+<body>
+  <div id="root" class="layout">
+    <!-- 메인 프레임 (상단 80%) -->
+    <section class="mainframe">
+      <aside id="sidebar" class="sidebar">
+        <header>
+          <h3>Files</h3>
+          <button id="newFileBtn">+ New</button>
+        </header>
+        <ul id="fileList" class="file-list"></ul>
+      </aside>
+      <main class="editor">
+        <div id="toolbar" class="toolbar"></div>
+        <div id="editor" class="editor-host"></div>
+      </main>
+    </section>
+
+    <!-- 터미널 (하단 20%) -->
+    <section class="terminal">
+      <div id="term-output" class="term-output"></div>
+      <div class="term-input">
+        <label>>> </label>
+        <input id="term-input" placeholder="help, ls, open <file>, save, cat <file> ..." />
+      </div>
+    </section>
+  </div>
+
+  <!-- Go WASM 런타임 -->
+  <script src="https://go.dev/dl/go1.22.5.linux-amd64.tar.gz" async defer onload=""></script>
+  <script src="wasm_exec.js"></script>
+  <script src="main.js" type="module"></script>
+</body>
+</html>
