@@ -5,15 +5,27 @@ async function loadWasm() {
   const bytes = await resp.arrayBuffer();
   const { instance } = await WebAssembly.instantiate(bytes, go.importObject);
   go.run(instance);
+
+  // wasm 실행 후 GoAPI가 전역에 등록됨
+  // 여기서 vfs를 GoAPI.vfs에 연결
+  vfs = {
+    list() { return GoAPI.vfs.list(); },
+    read(name) { return GoAPI.vfs.read(name); },
+    write(name, content) { GoAPI.vfs.write(name, content); },
+    exists(name) { return GoAPI.vfs.exists(name); }
+  };
+
+  // 초기화 진행
+  initEditor();
+  renderFiles('');
 }
 
-// 간단한 VFS(LocalStorage)
-const VFS_PREFIX = 'mdfs:';
-const vfs = {
-  list() { return Object.keys(localStorage).filter(k => k.startsWith(VFS_PREFIX)).map(k => k.slice(VFS_PREFIX.length)); },
-  read(name) { return localStorage.getItem(VFS_PREFIX+name) ?? ''; },
-  write(name, content) { localStorage.setItem(VFS_PREFIX+name, content); },
-  exists(name) { return localStorage.getItem(VFS_PREFIX+name) !== null; }
+// VFS: WASM 실행 전까지는 빈 껍데기
+let vfs = {
+  list() { return []; },
+  read(_) { return ''; },
+  write(_, __) {},
+  exists(_) { return false; }
 };
 
 // UI refs
@@ -103,6 +115,4 @@ termIn.addEventListener('keydown', (e) => {
 });
 
 // 부트
-initEditor();
-renderFiles('');
 loadWasm().catch(err => log('WASM load error: ' + err));

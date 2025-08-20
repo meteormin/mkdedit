@@ -23,6 +23,9 @@ func main() {
 	goapi := js.Global().Get("Object").New()
 	goapi.Set("hello", js.FuncOf(hello))
 	goapi.Set("onSave", js.FuncOf(onSave))
+
+	registerCallbacks(goapi)
+
 	js.Global().Set("GoAPI", goapi)
 
 	select {} // keep running

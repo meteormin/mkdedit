@@ -35,7 +35,7 @@ html, body { height: 100%; margin: 0; }
 #editor { height: 100%; }
 
 /* 터미널 */
-.terminal { border-top: 1px solid #333; display: flex; flex-direction: column; }
+.terminal { border-top: 1px solid #333; display: flex; flex-direction: column;max-height: 20vh }
 .term-output { flex: 1; overflow: auto; padding: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .term-input { display: flex; gap: 6px; padding: 6px 8px; border-top: 1px solid #333; }
 .term-input input { flex: 1; }
