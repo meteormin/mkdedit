@@ -77,6 +77,7 @@ let vfs = {
 // UI refs
 const fileListEl = document.getElementById('fileList');
 const newFileBtn = document.getElementById('newFileBtn');
+const saveFileBtn = document.getElementById('saveFileBtn');
 const termOut = document.getElementById('term-output');
 const termIn = document.getElementById('term-input');
 
@@ -100,11 +101,11 @@ async function openFile(name) {
     currentFile = name;
     const content = await vfs.read(name);
     editorInstance.setValue(content);
-    renderFiles(name);
+    renderFiles();
     log(`Opened: ${name}`);
 }
 
-async function renderFiles(active) {
+async function renderFiles() {
     fileListEl.innerHTML = '';
     const fileList = await vfs.list();
 
@@ -130,7 +131,7 @@ async function renderFiles(active) {
                         currentFile = '';
                         editorInstance.setValue('# New Document\n\n새 문서를 만들거나 파일을 선택하세요.');
                     }
-                    renderFiles(currentFile);
+                    renderFiles();
                 } catch (e) {
                     log(`Delete failed: ${e.message}`);
                 }
@@ -170,7 +171,7 @@ async function renderFiles(active) {
                 li.replaceChild(nameSpan, input); // 원래 span 복원
             };
 
-            input.addEventListener('blur', () => finish(true), { once: true });
+            input.addEventListener('blur', () => finish(true), {once: true});
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') finish(true);
                 if (e.key === 'Escape') finish(false);
@@ -193,8 +194,21 @@ async function newFile() {
         name = `untitled-${i++}.md`;
     }
     await vfs.write(name, '# New Document');
-    await renderFiles(name);
+    await renderFiles();
     openFile(name);
+}
+
+async function saveFile() {
+    if (!currentFile) {
+        log('no file to save');
+        return;
+    }
+    try {
+        await vfs.write(currentFile, editorInstance.getValue());
+        log(`Saved: ${currentFile}`);
+    } catch (e) {
+        log(`Save failed: ${e.message}`);
+    }
 }
 
 function log(msg) {
@@ -206,7 +220,17 @@ async function runTerminal(cmdline) {
     const [cmd, ...args] = cmdline.trim().split(/\s+/);
     switch (cmd) {
         case 'help':
-            log('Commands: help, ls, open <file>, save, cat <file>, rm <file>');
+            log('Commands: help, new <file>, ls, open <file>, save, cat <file>, rm <file>');
+            break;
+        case 'new':   // ✅ 추가
+            let base = 'untitled.md', i = 1, name = base;
+            while (await vfs.exists(name)) {
+                name = `untitled-${i++}.md`;
+            }
+            await vfs.write(name, '# New Document');
+            await renderFiles();
+            openFile(name);
+            log(`created new file: ${name}`);
             break;
         case 'ls':
             const files = await vfs.list();
@@ -229,7 +253,7 @@ async function runTerminal(cmdline) {
             if (await vfs.exists(args[1])) return log(`already exists: ${args[1]}`);
             await vfs.rename(args[0], args[1]);
             if (currentFile === args[0]) currentFile = args[1];
-            await renderFiles(currentFile);
+            await renderFiles();
             log(`renamed ${args[0]} -> ${args[1]}`);
             break;
         case 'cat':
@@ -251,7 +275,7 @@ async function runTerminal(cmdline) {
                     editorInstance.setValue('# New Document');
                     currentFile = '';
                 }
-                await renderFiles(currentFile);
+                await renderFiles();
             } catch (e) {
                 log(`delete failed: ${e.message}`);
             }
@@ -263,6 +287,7 @@ async function runTerminal(cmdline) {
 
 // 이벤트 바인딩
 newFileBtn.onclick = newFile;
+saveFileBtn.onclick = saveFile;
 termIn.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         log('> ' + termIn.value);
@@ -273,4 +298,4 @@ termIn.addEventListener('keydown', (e) => {
 
 // 초기화 진행
 initEditor();
-renderFiles('');
+renderFiles();
