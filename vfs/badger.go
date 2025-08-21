@@ -24,8 +24,7 @@ func PutFile(db *badger.DB, key string, data []byte) error {
 }
 
 func GetAllKeys(db *badger.DB) ([]string, error) {
-	var keys []string
-
+	keys := make([]string, 0)
 	err := db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		opts.PrefetchValues = false
