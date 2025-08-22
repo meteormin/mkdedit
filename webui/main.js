@@ -1,3 +1,5 @@
+import OverType from "https://unpkg.com/overtype/dist/overtype.esm.js";
+
 // VFS
 let vfs = {
     async list() {
