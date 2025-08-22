@@ -222,13 +222,12 @@ async function runTerminal(cmdline) {
     const [cmd, ...args] = cmdline.trim().split(/\s+/);
     switch (cmd) {
         case 'help':
-            log('Commands: help, new <file>, ls, open <file>, save, cat <file>, rm <file>');
+            log('Commands: help, new {name}, ls, open {name}, save, cat {name}, rm {name}');
             break;
         case 'new':   // ✅ 추가
-            let base = 'untitled.md', i = 1, name = base;
-            while (await vfs.exists(name)) {
-                name = `untitled-${i++}.md`;
-            }
+            if (!args[0]) return log(`usage: new {name}`);
+            name = args[0];
+            if(await vfs.exists(name)) return log(`already exists: ${name}`);
             await vfs.write(name, '# New Document');
             await renderFiles();
             openFile(name);
@@ -239,7 +238,7 @@ async function runTerminal(cmdline) {
             files.forEach(f => log(f));
             break;
         case 'open':
-            if (!args[0]) return log('usage: open <file>');
+            if (!args[0]) return log('usage: open {name}');
             const fileExists = await vfs.exists(args[0]);
             if (!fileExists) return log('no such file');
             openFile(args[0]);
@@ -250,7 +249,7 @@ async function runTerminal(cmdline) {
             log(`saved: ${currentFile}`);
             break;
         case 'rename':
-            if (args.length < 2) return log('usage: rename <old> <new>');
+            if (args.length < 2) return log('usage: rename {old} {new}');
             if (!await vfs.exists(args[0])) return log(`no such file: ${args[0]}`);
             if (await vfs.exists(args[1])) return log(`already exists: ${args[1]}`);
             await vfs.rename(args[0], args[1]);
@@ -259,12 +258,12 @@ async function runTerminal(cmdline) {
             log(`renamed ${args[0]} -> ${args[1]}`);
             break;
         case 'cat':
-            if (!args[0]) return log('usage: cat <file>');
+            if (!args[0]) return log('usage: cat {name}');
             const content = await vfs.read(args[0]);
             log(content);
             break;
         case 'rm': // 새로 추가된 부분
-            if (!args[0]) return log('usage: rm <file>');
+            if (!args[0]) return log('usage: rm {name}');
             try {
                 const fileExists = await vfs.exists(args[0]);
                 if (!fileExists) return log('no such file');
@@ -281,6 +280,9 @@ async function runTerminal(cmdline) {
             } catch (e) {
                 log(`delete failed: ${e.message}`);
             }
+            break;
+        case 'clear':
+            termOut.innerHTML = '';
             break;
         default:
             if (cmd) log(`unknown: ${cmd}`);
